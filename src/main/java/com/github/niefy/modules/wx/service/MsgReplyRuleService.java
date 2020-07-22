@@ -8,13 +8,20 @@ import java.util.List;
 import java.util.Map;
 
 public interface MsgReplyRuleService extends IService<MsgReplyRule> {
+    /**
+     * 分页查询用户数据
+     * @param params 查询参数
+     * @return PageUtils 分页结果
+     */
     PageUtils queryPage(Map<String, Object> params);
+
     /**
      * 保存自动回复规则
      *
      * @param msgReplyRule
      */
 
+    @Override
     boolean save(MsgReplyRule msgReplyRule);
 
     /**
@@ -33,9 +40,12 @@ public interface MsgReplyRuleService extends IService<MsgReplyRule> {
 
     /**
      * 筛选符合条件的回复规则
+     *
+     *
+     * @param appid
      * @param exactMatch 是否精确匹配
-     * @param keywords 关键词
+     * @param keywords   关键词
      * @return 规则列表
      */
-    List<MsgReplyRule> getMatchedRules(boolean exactMatch, String keywords);
+    List<MsgReplyRule> getMatchedRules(String appid, boolean exactMatch, String keywords);
 }

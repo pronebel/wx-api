@@ -1,24 +1,29 @@
 package com.github.niefy.modules.wx.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.github.niefy.common.utils.Json;
+import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.sql.Time;
+import java.util.Date;
 
 /**
+ * 自动回复规则
  * @author Nifury
  * @date 2017-11-1
  */
-@TableName("msg_reply_rule")
+@Data
+@TableName("wx_msg_reply_rule")
 public class MsgReplyRule implements Serializable {
     private static final long serialVersionUID = 1L;
     @TableId(type = IdType.AUTO)
     private int ruleId;
+    private String appid;
     @NotEmpty(message = "规则名称不得为空")
     private String ruleName;
     @NotEmpty(message = "匹配关键词不得为空")
@@ -33,89 +38,11 @@ public class MsgReplyRule implements Serializable {
     private String desc;
     private Time effectTimeStart;
     private Time effectTimeEnd;
+    private int priority;
+    private Date updateTime;
 
     @Override
     public String toString() {
         return Json.toJsonString(this);
-    }
-
-    public int getRuleId() {
-        return ruleId;
-    }
-
-    public void setRuleId(int ruleId) {
-        this.ruleId = ruleId;
-    }
-
-    public String getRuleName() {
-        return ruleName;
-    }
-
-    public void setRuleName(String ruleName) {
-        this.ruleName = ruleName;
-    }
-
-    public String getMatchValue() {
-        return matchValue;
-    }
-
-    public void setMatchValue(String matchValue) {
-        this.matchValue = matchValue;
-    }
-
-    public String getReplyType() {
-        return replyType;
-    }
-
-    public void setReplyType(String replyType) {
-        this.replyType = replyType;
-    }
-
-    public String getReplyContent() {
-        return replyContent;
-    }
-
-    public void setReplyContent(String replyContent) {
-        this.replyContent = replyContent;
-    }
-
-    public boolean getStatus() {
-        return status;
-    }
-
-    public void setStatus(boolean status) {
-        this.status = status;
-    }
-
-    public String getDesc() {
-        return desc;
-    }
-
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
-    public Time getEffectTimeStart() {
-        return effectTimeStart;
-    }
-
-    public void setEffectTimeStart(Time effectTimeStart) {
-        this.effectTimeStart = effectTimeStart;
-    }
-
-    public Time getEffectTimeEnd() {
-        return effectTimeEnd;
-    }
-
-    public void setEffectTimeEnd(Time effectTimeEnd) {
-        this.effectTimeEnd = effectTimeEnd;
-    }
-    
-    public boolean isExactMatch() {
-        return exactMatch;
-    }
-
-    public void setExactMatch(boolean exactMatch) {
-        this.exactMatch = exactMatch;
     }
 }

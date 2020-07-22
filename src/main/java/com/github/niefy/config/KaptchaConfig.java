@@ -1,10 +1,3 @@
-/**
- * Copyright (c) 2016-2019 人人开源 All rights reserved.
- *
- *
- * 版权所有，侵权必究！
- */
-
 package com.github.niefy.config;
 
 import com.google.code.kaptcha.impl.DefaultKaptcha;
@@ -17,7 +10,6 @@ import java.util.Properties;
 
 /**
  * 生成验证码配置
- *
  * @author Mark sunlightcs@gmail.com
  */
 @Configuration

@@ -1,14 +1,7 @@
-/**
- * Copyright (c) 2016-2019 人人开源 All rights reserved.
- *
- *
- * 版权所有，侵权必究！
- */
-
 package com.github.niefy.common.xss;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -24,14 +17,13 @@ import java.util.Map;
 
 /**
  * XSS过滤处理
- *
  * @author Mark sunlightcs@gmail.com
  */
 public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     //没被包装过的HttpServletRequest（特殊场景，需要自己过滤）
     HttpServletRequest orgRequest;
     //html过滤
-    private final static HTMLFilter htmlFilter = new HTMLFilter();
+    private final static HTMLFilter HTML_FILTER = new HTMLFilter();
 
     public XssHttpServletRequestWrapper(HttpServletRequest request) {
         super(request);
@@ -41,7 +33,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     @Override
     public ServletInputStream getInputStream() throws IOException {
         //非json类型，直接返回
-        if(!MediaType.APPLICATION_JSON_VALUE.equalsIgnoreCase(super.getHeader(HttpHeaders.CONTENT_TYPE))){
+        if (!MediaType.APPLICATION_JSON_VALUE.equalsIgnoreCase(super.getHeader(HttpHeaders.CONTENT_TYPE))) {
             return super.getInputStream();
         }
 
@@ -71,7 +63,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
             }
 
             @Override
-            public int read() throws IOException {
+            public int read() {
                 return bis.read();
             }
         };
@@ -100,9 +92,9 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
     @Override
-    public Map<String,String[]> getParameterMap() {
-        Map<String,String[]> map = new LinkedHashMap<>();
-        Map<String,String[]> parameters = super.getParameterMap();
+    public Map<String, String[]> getParameterMap() {
+        Map<String, String[]> map = new LinkedHashMap<>();
+        Map<String, String[]> parameters = super.getParameterMap();
         for (String key : parameters.keySet()) {
             String[] values = parameters.get(key);
             for (int i = 0; i < values.length; i++) {
@@ -123,7 +115,7 @@ public class XssHttpServletRequestWrapper extends HttpServletRequestWrapper {
     }
 
     private String xssEncode(String input) {
-        return htmlFilter.filter(input);
+        return HTML_FILTER.filter(input);
     }
 
     /**

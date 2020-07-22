@@ -2,23 +2,16 @@ package com.github.niefy.modules.wx.manage;
 
 import java.util.Arrays;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import com.github.niefy.modules.wx.service.MsgReplyRuleService;
-import com.github.niefy.modules.wx.dto.RegexConstant;
-import me.chanjar.weixin.common.api.WxConsts;
+import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.github.niefy.modules.wx.entity.MsgReplyRule;
 import com.github.niefy.common.utils.PageUtils;
 import com.github.niefy.common.utils.R;
-
 
 
 /**
@@ -29,17 +22,20 @@ import com.github.niefy.common.utils.R;
  * @date 2019-11-12 18:30:15
  */
 @RestController
-@RequestMapping("/manage/msgreplyrule")
+@RequestMapping("/manage/msgReplyRule")
 public class MsgReplyRuleManageController {
     @Autowired
     private MsgReplyRuleService msgReplyRuleService;
+    @Autowired
+    private WxMpService wxMpService;
 
     /**
      * 列表
      */
-    @RequestMapping("/list")
+    @GetMapping("/list")
     @RequiresPermissions("wx:msgreplyrule:list")
-    public R list(@RequestParam Map<String, Object> params){
+    public R list(@CookieValue String appid,@RequestParam Map<String, Object> params) {
+        params.put("appid",appid);
         PageUtils page = msgReplyRuleService.queryPage(params);
 
         return R.ok().put("page", page);
@@ -49,10 +45,10 @@ public class MsgReplyRuleManageController {
     /**
      * 信息
      */
-    @RequestMapping("/info/{ruleId}")
+    @GetMapping("/info/{ruleId}")
     @RequiresPermissions("wx:msgreplyrule:info")
-    public R info(@PathVariable("ruleId") Integer ruleId){
-		MsgReplyRule msgReplyRule = msgReplyRuleService.getById(ruleId);
+    public R info(@PathVariable("ruleId") Integer ruleId) {
+        MsgReplyRule msgReplyRule = msgReplyRuleService.getById(ruleId);
 
         return R.ok().put("msgReplyRule", msgReplyRule);
     }
@@ -60,14 +56,10 @@ public class MsgReplyRuleManageController {
     /**
      * 保存
      */
-    @RequestMapping("/save")
+    @PostMapping("/save")
     @RequiresPermissions("wx:msgreplyrule:save")
-    public R save(@RequestBody MsgReplyRule msgReplyRule){
-        if(WxConsts.KefuMsgType.NEWS.equals(msgReplyRule.getReplyType()) &&
-                !Pattern.matches(RegexConstant.NUMBER_ARRAY, msgReplyRule.getReplyContent())){
-            return R.error("图文消息ID格式不正确");
-        }
-		msgReplyRuleService.save(msgReplyRule);
+    public R save(@RequestBody MsgReplyRule msgReplyRule) {
+        msgReplyRuleService.save(msgReplyRule);
 
         return R.ok();
     }
@@ -75,10 +67,10 @@ public class MsgReplyRuleManageController {
     /**
      * 修改
      */
-    @RequestMapping("/update")
+    @PostMapping("/update")
     @RequiresPermissions("wx:msgreplyrule:update")
-    public R update(@RequestBody MsgReplyRule msgReplyRule){
-		msgReplyRuleService.updateById(msgReplyRule);
+    public R update(@RequestBody MsgReplyRule msgReplyRule) {
+        msgReplyRuleService.updateById(msgReplyRule);
 
         return R.ok();
     }
@@ -86,10 +78,10 @@ public class MsgReplyRuleManageController {
     /**
      * 删除
      */
-    @RequestMapping("/delete")
+    @PostMapping("/delete")
     @RequiresPermissions("wx:msgreplyrule:delete")
-    public R delete(@RequestBody Integer[] ruleIds){
-		msgReplyRuleService.removeByIds(Arrays.asList(ruleIds));
+    public R delete(@RequestBody Integer[] ruleIds) {
+        msgReplyRuleService.removeByIds(Arrays.asList(ruleIds));
 
         return R.ok();
     }

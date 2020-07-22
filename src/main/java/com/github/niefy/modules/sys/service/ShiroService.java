@@ -1,10 +1,3 @@
-/**
- * Copyright (c) 2016-2019 人人开源 All rights reserved.
- *
- *
- * 版权所有，侵权必究！
- */
-
 package com.github.niefy.modules.sys.service;
 
 import com.github.niefy.modules.sys.entity.SysUserEntity;
@@ -14,7 +7,6 @@ import java.util.Set;
 
 /**
  * shiro相关接口
- *
  * @author Mark sunlightcs@gmail.com
  */
 public interface ShiroService {
@@ -27,7 +19,8 @@ public interface ShiroService {
 
     /**
      * 根据用户ID，查询用户
-     * @param userId
+     * @param userId 用户ID
+     * @return SysUserEntity 管理用户
      */
     SysUserEntity queryUser(Long userId);
 }

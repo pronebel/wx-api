@@ -1,26 +1,26 @@
 package com.github.niefy.modules.wx.service.impl;
 
-import com.github.niefy.modules.wx.entity.MsgTemplate;
-import com.github.niefy.modules.wx.form.TemplateMsgForm;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.github.niefy.config.TaskExcutor;
+import com.github.niefy.modules.wx.entity.TemplateMsgLog;
+import com.github.niefy.modules.wx.entity.WxUser;
+import com.github.niefy.modules.wx.form.TemplateMsgBatchForm;
 import com.github.niefy.modules.wx.service.MsgTemplateService;
 import com.github.niefy.modules.wx.service.TemplateMsgLogService;
-import com.github.niefy.common.exception.RRException;
-import com.github.niefy.modules.wx.entity.TemplateMsgLog;
 import com.github.niefy.modules.wx.service.TemplateMsgService;
+import com.github.niefy.modules.wx.service.WxUserService;
 import lombok.RequiredArgsConstructor;
 import me.chanjar.weixin.common.error.WxErrorException;
 import me.chanjar.weixin.mp.api.WxMpService;
-import me.chanjar.weixin.mp.bean.template.WxMpTemplateData;
 import me.chanjar.weixin.mp.bean.template.WxMpTemplateMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Nifury
@@ -29,58 +29,65 @@ import java.util.concurrent.Executors;
 @Service
 @RequiredArgsConstructor
 public class TemplateMsgServiceImpl implements TemplateMsgService {
-	ExecutorService templateMsgExecutor = Executors.newFixedThreadPool(10);
-	@Autowired
-	private TemplateMsgLogService templateMsgLogService;
-	private final WxMpService wxService;
-	@Autowired
+    Logger logger = LoggerFactory.getLogger(this.getClass());
+    @Autowired
+    private TemplateMsgLogService templateMsgLogService;
+    private final WxMpService wxService;
+    @Autowired
     MsgTemplateService msgTemplateService;
+    @Autowired
+	WxUserService wxUserService;
 
-	/**
-	 * 发送微信模版消息,使用固定线程的线程池
-	 */
-	@Override
+    /**
+     * 发送微信模版消息,使用固定线程的线程池
+     */
+    @Override
+    @Async
+    public void sendTemplateMsg(WxMpTemplateMessage msg,String appid) {
+        TaskExcutor.submit(() -> {
+            String result;
+            try {
+                wxService.switchover(appid);
+                result = wxService.getTemplateMsgService().sendTemplateMsg(msg);
+            } catch (WxErrorException e) {
+                result = e.getMessage();
+            }
+
+            //保存发送日志
+            TemplateMsgLog log = new TemplateMsgLog(msg,appid, result);
+            templateMsgLogService.addLog(log);
+        });
+    }
+
+    @Override
 	@Async
-	public void sendTemplateMsg(WxMpTemplateMessage msg) {
-		templateMsgExecutor.submit(()->{
-			String result;
-			try {
-				result = wxService.getTemplateMsgService().sendTemplateMsg(msg);
-			} catch (WxErrorException e) {
-				result= e.getMessage();
-			}
-
-			//保存发送日志
-			TemplateMsgLog log = new TemplateMsgLog(msg, result);
-			templateMsgLogService.addLog(log);
-		});
-	}
-
-	/**
-	 * 以默认方式向特定用户发送消息
-	 * @param form
-	 */
-	@Override
-	public void sendToUser(TemplateMsgForm form){
-		MsgTemplate msgTemplate = msgTemplateService.selectByName(form.getTemplate());
-		if(msgTemplate==null){
-			throw new RRException("消息模板不存在");
+    public void sendMsgBatch(TemplateMsgBatchForm form, String appid) {
+		logger.info("批量发送模板消息任务开始,参数：{}",form.toString());
+        wxService.switchover(appid);
+		WxMpTemplateMessage.WxMpTemplateMessageBuilder builder = WxMpTemplateMessage.builder()
+				.templateId(form.getTemplateId())
+				.url(form.getUrl())
+				.miniProgram(form.getMiniprogram())
+				.data(form.getData());
+		Map<String, Object> filterParams = form.getWxUserFilterParams();
+		if(filterParams==null) {
+            filterParams=new HashMap<>(8);
+        }
+		long currentPage=1L,totalPages=Long.MAX_VALUE;
+		filterParams.put("limit","500");
+		while (currentPage<=totalPages){
+			filterParams.put("page",String.valueOf(currentPage));
+            //按条件查询用户
+			IPage<WxUser> wxUsers = wxUserService.queryPage(filterParams);
+			logger.info("批量发送模板消息任务,使用查询条件，处理第{}页，总用户数：{}",currentPage,wxUsers.getTotal());
+			wxUsers.getRecords().forEach(user->{
+				WxMpTemplateMessage msg = builder.toUser(user.getOpenid()).build();
+				this.sendTemplateMsg(msg,appid);
+			});
+			currentPage=wxUsers.getCurrent()+1L;
+			totalPages=wxUsers.getPages();
 		}
-		List<WxMpTemplateData> list = new LinkedList<>();
-		String msg=msgTemplate.getData();
-		if(msg==null)msg="";
-		msg=msg.replace("${msg}",form.getMsg());
-		list.add(new WxMpTemplateData("first", msg));
-		list.add(new WxMpTemplateData("keyword1", msgTemplate.getTitle(), msgTemplate.getColor()));
-		list.add(new WxMpTemplateData("keyword2", LocalDate.now().toString(), msgTemplate.getColor()));
-		WxMpTemplateMessage wxMpTemplateMessage = WxMpTemplateMessage.builder()
-				.toUser(form.getOpenid())
-				.templateId(msgTemplate.getTemplateId())
-				.url(msgTemplate.getUrl())
-				.build();
-		wxMpTemplateMessage.setData(list);
-		this.sendTemplateMsg(wxMpTemplateMessage);
-	}
-
+		logger.info("批量发送模板消息任务结束");
+    }
 
 }

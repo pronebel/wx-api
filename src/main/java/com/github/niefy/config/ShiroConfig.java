@@ -1,10 +1,3 @@
-/**
- * Copyright (c) 2016-2019 人人开源 All rights reserved.
- *
- *
- * 版权所有，侵权必究！
- */
-
 package com.github.niefy.config;
 
 import com.github.niefy.modules.sys.oauth2.OAuth2Filter;
@@ -24,7 +17,6 @@ import java.util.Map;
 
 /**
  * Shiro配置
- *
  * @author Mark sunlightcs@gmail.com
  */
 @Configuration
@@ -44,14 +36,15 @@ public class ShiroConfig {
         shiroFilter.setSecurityManager(securityManager);
 
         //oauth过滤
-        Map<String, Filter> filters = new HashMap<>();
+        Map<String, Filter> filters = new HashMap<>(4);
         filters.put("oauth2", new OAuth2Filter());
         shiroFilter.setFilters(filters);
 
-        Map<String, String> filterMap = new LinkedHashMap<>();
+        Map<String, String> filterMap = new LinkedHashMap<>(8);
         filterMap.put("/sys/login", "anon");
         filterMap.put("/sys/**", "oauth2");
         filterMap.put("/manage/**", "oauth2");
+        filterMap.put("/wx/**", "anon");
         filterMap.put("/**", "anon");
         shiroFilter.setFilterChainDefinitionMap(filterMap);
 

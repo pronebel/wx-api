@@ -28,8 +28,8 @@ public class WxMpMessageRouterConfiguration {
     public WxMpMessageRouter messageRouter(WxMpService wxMpService) {
         final WxMpMessageRouter newRouter = new WxMpMessageRouter(wxMpService);
 
-        // 记录所有事件的日志 （异步执行）
-        newRouter.rule().handler(this.logHandler).next();
+        // 记录所有事件的日志
+        newRouter.rule().async(false).handler(this.logHandler).next();
 
         // 接收客服会话管理事件
         newRouter.rule().async(false).msgType(EVENT).event(KF_CREATE_SESSION).handler(this.kfSessionHandler).end();

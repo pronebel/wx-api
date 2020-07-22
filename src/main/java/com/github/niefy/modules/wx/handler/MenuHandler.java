@@ -2,8 +2,9 @@ package com.github.niefy.modules.wx.handler;
 
 import java.util.Map;
 
-import com.github.niefy.modules.wx.service.WeixinMsgService;
+import com.github.niefy.modules.wx.service.MsgReplyService;
 import me.chanjar.weixin.common.api.WxConsts;
+import me.chanjar.weixin.mp.util.WxMpConfigStorageHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +19,7 @@ import me.chanjar.weixin.mp.bean.message.WxMpXmlOutMessage;
 @Component
 public class MenuHandler extends AbstractHandler {
     @Autowired
-    WeixinMsgService weixinMsgService;
+    MsgReplyService msgReplyService;
 
     @Override
     public WxMpXmlOutMessage handle(WxMpXmlMessage wxMessage,
@@ -27,8 +28,9 @@ public class MenuHandler extends AbstractHandler {
         if (WxConsts.EventType.VIEW.equals(wxMessage.getEvent())) {
             return null;
         }
+        String appid = WxMpConfigStorageHolder.get();
         logger.info("菜单事件：" + wxMessage.getEventKey());
-        weixinMsgService.wxReplyMsg(true,wxMessage.getFromUser(), wxMessage.getEventKey());
+        msgReplyService.tryAutoReply(appid, true, wxMessage.getFromUser(), wxMessage.getEventKey());
         return null;
     }
 

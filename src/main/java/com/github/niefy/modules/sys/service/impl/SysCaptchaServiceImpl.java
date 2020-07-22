@@ -1,10 +1,3 @@
-/**
- * Copyright (c) 2016-2019 人人开源 All rights reserved.
- *
- *
- * 版权所有，侵权必究！
- */
-
 package com.github.niefy.modules.sys.service.impl;
 
 
@@ -16,7 +9,7 @@ import com.github.niefy.common.exception.RRException;
 import com.github.niefy.common.utils.DateUtils;
 import com.github.niefy.modules.sys.dao.SysCaptchaDao;
 import com.github.niefy.modules.sys.entity.SysCaptchaEntity;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +18,6 @@ import java.util.Date;
 
 /**
  * 验证码
- *
  * @author Mark sunlightcs@gmail.com
  */
 @Service("sysCaptchaService")
@@ -35,7 +27,7 @@ public class SysCaptchaServiceImpl extends ServiceImpl<SysCaptchaDao, SysCaptcha
 
     @Override
     public BufferedImage getCaptcha(String uuid) {
-        if(StringUtils.isBlank(uuid)){
+        if (StringUtils.isBlank(uuid)) {
             throw new RRException("uuid不能为空");
         }
         //生成文字验证码
@@ -54,17 +46,13 @@ public class SysCaptchaServiceImpl extends ServiceImpl<SysCaptchaDao, SysCaptcha
     @Override
     public boolean validate(String uuid, String code) {
         SysCaptchaEntity captchaEntity = this.getOne(new QueryWrapper<SysCaptchaEntity>().eq("uuid", uuid));
-        if(captchaEntity == null){
+        if (captchaEntity == null) {
             return false;
         }
 
         //删除验证码
         this.removeById(uuid);
 
-        if(captchaEntity.getCode().equalsIgnoreCase(code) && captchaEntity.getExpireTime().getTime() >= System.currentTimeMillis()){
-            return true;
-        }
-
-        return false;
+        return captchaEntity.getCode().equalsIgnoreCase(code) && captchaEntity.getExpireTime().getTime() >= System.currentTimeMillis();
     }
 }

@@ -1,10 +1,3 @@
-/**
- * Copyright (c) 2016-2019 人人开源 All rights reserved.
- *
- *
- * 版权所有，侵权必究！
- */
-
 package com.github.niefy.common.annotation;
 
 import java.lang.annotation.Documented;
@@ -15,7 +8,6 @@ import java.lang.annotation.Target;
 
 /**
  * 系统日志注解
- *
  * @author Mark sunlightcs@gmail.com
  */
 @Target(ElementType.METHOD)
@@ -23,5 +15,5 @@ import java.lang.annotation.Target;
 @Documented
 public @interface SysLog {
 
-	String value() default "";
+    String value() default "";
 }
